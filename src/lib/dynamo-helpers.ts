@@ -20,8 +20,8 @@ import {
   TransactWriteCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { docClient, DYNAMODB_TABLE, getCampusPartitionKey } from "./aws";
-import { ActivityEvent, Incident, IncidentSeverity, IncidentStatus } from "@/types/incident";
-import { ResponseTeam, TeamStatus } from "@/types/team";
+import { ActivityEvent, Incident, IncidentSeverity } from "@/types/incident";
+import { ResponseTeam } from "@/types/team";
 
 const COUNTERS_SK = "META#COUNTERS";
 const BASELINE_SEQUENCE_START = 89;

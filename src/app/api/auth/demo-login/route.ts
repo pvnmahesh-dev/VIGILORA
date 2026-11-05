@@ -5,7 +5,6 @@ import {
   authenticateUser,
   createSession,
   getSessionCookieOptions,
-  SESSION_COOKIE_NAME,
   UserRole,
 } from "@/lib/auth";
 

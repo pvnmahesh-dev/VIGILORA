@@ -15,7 +15,7 @@ if (typeof window !== "undefined") {
 import { DynamoDBClient, DescribeTableCommand } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { S3Client, HeadBucketCommand } from "@aws-sdk/client-s3";
-import { STSClient, GetCallerIdentityCommand } from "@aws-sdk/client-sts";
+import { STSClient } from "@aws-sdk/client-sts";
 import { fromLoginCredentials, fromNodeProviderChain } from "@aws-sdk/credential-providers";
 
 // 1. Environment & Configuration Constants

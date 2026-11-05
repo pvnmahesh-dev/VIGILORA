@@ -4,7 +4,7 @@ import { validateTeamUpdate } from "@/lib/validation";
 import { getTeam } from "@/lib/dynamo-helpers";
 import { docClient, DYNAMODB_TABLE } from "@/lib/aws";
 import { GetCommand, UpdateCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
-import { ResponseTeam, TeamStatus } from "@/types/team";
+import { ResponseTeam } from "@/types/team";
 import { Incident } from "@/types/incident";
 
 interface RouteParams {

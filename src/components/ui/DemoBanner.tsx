@@ -15,7 +15,6 @@ export function DemoBanner({ className, compact = false }: DemoBannerProps) {
   const { resetDemoData } = useIncidents();
   const {
     status: awsStatus,
-    label: awsLabel,
     message: awsMessage,
     recheck,
   } = useAwsPreflight();

@@ -111,7 +111,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         return { success: true };
-      } catch (err) {
+      } catch {
         return {
           success: false,
           error: "Network error. Unable to reach terminal authorization server.",
@@ -202,5 +202,9 @@ export function useAuth(): AuthContextType {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
+}
+
+export function useOptionalAuth(): AuthContextType | null {
+  return useContext(AuthContext) ?? null;
 }
 

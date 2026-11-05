@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, useCallback } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { User, X, Filter, ArrowRight, Radio, LayoutList, Crosshair } from "lucide-react";
@@ -138,21 +138,21 @@ export default function DashboardPage() {
     });
   }, [incidents, searchQuery, selectedSeverities, selectedCategory, selectedStatus]);
 
-  const handleToggleSeverity = useCallback((severity: IncidentSeverity) => {
+  const handleToggleSeverity = (severity: IncidentSeverity) => {
     setSelectedSeverities((prev) =>
       prev.includes(severity)
         ? prev.filter((s) => s !== severity)
         : [...prev, severity]
     );
-  }, []);
+  };
 
-  const handleResetFilters = useCallback(() => {
+  const handleResetFilters = () => {
     setSearchQuery("");
     setSelectedSeverities([]);
     setSelectedCategory("All Categories");
     setSelectedStatus("All Statuses");
     setActiveUserFilter(null);
-  }, []);
+  };
 
   const handleApplyFilters = () => {
     // Applied automatically via reactive state

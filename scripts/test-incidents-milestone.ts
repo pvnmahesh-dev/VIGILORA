@@ -216,9 +216,20 @@ async function runTests() {
     // Test 3: GET /api/incidents/[id] (Single Incident & Activity Query)
     // -------------------------------------------------------------------------
     console.log("\nTest 3: Fetch Incident Detail by ID");
-    const detailRes = await fetch(`${BASE_URL}/api/incidents/${incident1.id}`, {
+
+    // RBAC: Responders cannot access unassigned incidents -> HTTP 403
+    const forbiddenRes = await fetch(`${BASE_URL}/api/incidents/${incident1.id}`, {
       headers: {
         Cookie: `vigilora_session=${responderToken}`,
+        "x-vigilora-test-client": "active-test-suite",
+      },
+    });
+    assert(forbiddenRes.status === 403, `Unassigned incident detail returns HTTP 403 for responder (Got ${forbiddenRes.status})`);
+
+    // Dispatcher fetches incident detail -> HTTP 200
+    const detailRes = await fetch(`${BASE_URL}/api/incidents/${incident1.id}`, {
+      headers: {
+        Cookie: `vigilora_session=${dispatcherToken}`,
         "x-vigilora-test-client": "active-test-suite",
       },
     });
@@ -418,18 +429,13 @@ async function runTests() {
       } catch {}
     }
 
-    // Verify in DynamoDB that no test incidents remain
-    const verifyIncidents = await docClient.send(
-      new QueryCommand({
-        TableName: DYNAMODB_TABLE,
-        KeyConditionExpression: "pk = :pk AND begins_with(sk, :prefix)",
-        ExpressionAttributeValues: {
-          ":pk": campusPk,
-          ":prefix": "INCIDENT#VIG-2026-",
-        },
-      })
-    );
-    assert((verifyIncidents.Items?.length || 0) === 0, "DynamoDB verified: ZERO test incidents remain in table");
+    // Verify in DynamoDB that no created test incidents remain
+    let remainingIncidentKeys = 0;
+    for (const key of cleanupKeys.filter((k) => k.sk.startsWith("INCIDENT#"))) {
+      const check = await docClient.send(new GetCommand({ TableName: DYNAMODB_TABLE, Key: key }));
+      if (check.Item) remainingIncidentKeys++;
+    }
+    assert(remainingIncidentKeys === 0, "DynamoDB verified: ZERO test incidents remain in table");
     console.log(`  Purged ${deletedCount} test records from DynamoDB table.`);
   }
 

@@ -16,7 +16,7 @@ import {
   ActivityEvent,
 } from "@/types/incident";
 import { ResponseTeam, TeamStatus } from "@/types/team";
-import { useAuth } from "@/context/AuthContext";
+import { useOptionalAuth } from "@/context/AuthContext";
 import { calculateResponseTelemetry } from "@/lib/telemetry";
 
 export interface EmergencySettings {
@@ -147,23 +147,6 @@ export function IncidentProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const refreshIncidents = useCallback(async () => {
-    try {
-      const res = await fetch("/api/incidents", {
-        headers: { Accept: "application/json" },
-        cache: "no-store",
-      });
-      if (res.ok) {
-        const payload = await res.json();
-        if (Array.isArray(payload.data)) {
-          setIncidents(payload.data);
-        }
-      }
-    } catch (e) {
-      console.warn("VIGILORA: Failed to refresh incidents:", e);
-    }
-  }, []);
-
   const refreshAll = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -224,13 +207,7 @@ export function IncidentProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  let authContext: ReturnType<typeof useAuth> | null = null;
-  try {
-    authContext = useAuth();
-  } catch {
-    authContext = null;
-  }
-
+  const authContext = useOptionalAuth();
   const authIsAuthenticated = authContext?.isAuthenticated;
   const authIsLoading = authContext?.isLoading;
   const authUserEmail = authContext?.user?.email;
@@ -248,7 +225,7 @@ export function IncidentProvider({ children }: { children: React.ReactNode }) {
     } else {
       refreshAll();
     }
-  }, [authIsAuthenticated, authIsLoading, authUserEmail, refreshAll]);
+  }, [authContext, authIsAuthenticated, authIsLoading, authUserEmail, refreshAll]);
 
   // ---------------------------------------------------------------------------
   // 2. Actions: Real Asynchronous AWS API Calls

@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import {
   Users2,
   KeyRound,
@@ -17,7 +16,6 @@ import { Button } from "@/components/ui/Button";
 import { HauntedCampusSilhouette } from "@/components/ui/HauntedCampusSilhouette";
 
 export default function RegisterPage() {
-  const router = useRouter();
   const [fullName, setFullName] = useState("");
   const [callSign, setCallSign] = useState("");
   const [sector, setSector] = useState("Alpha Sector – North Campus");

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -30,7 +30,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
-  const rolePresentation = getRolePresentation(user?.role);
+  const rolePresentation = getRolePresentation(user ? user.role : undefined);
   const sidebarRef = useRef<HTMLElement>(null);
 
   // Close sidebar on outside click or Escape key press
@@ -118,7 +118,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         onClick={onClose}
         aria-hidden="true"
         className={cn(
-          "fixed inset-0 top-14 z-40 bg-black/65 backdrop-blur-[2px] transition-opacity duration-200 ease-out",
+          "fixed inset-0 top-14 z-40 bg-black/60 backdrop-blur-[2px] transition-opacity duration-200 ease-out",
           isOpen
             ? "opacity-100 pointer-events-auto"
             : "opacity-0 pointer-events-none"
