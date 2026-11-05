@@ -1,26 +1,366 @@
 @import "tailwindcss";
 
+@theme {
+  --font-bodoni: var(--font-bodoni), "Bodoni Moda", serif;
+  --font-ibm-plex: var(--font-ibm-plex), "IBM Plex Mono", monospace;
+  --font-mono-plex: var(--font-ibm-plex), "IBM Plex Mono", monospace;
+  --font-cormorant: var(--font-cormorant), "Cormorant SC", serif;
+  --font-oswald: var(--font-oswald), "Oswald", sans-serif;
+  --font-cinzel: var(--font-bodoni), "Bodoni Moda", serif;
+  --font-cinzel-dec: var(--font-cormorant), "Cormorant SC", serif;
+  --font-mono: var(--font-ibm-plex), "IBM Plex Mono", monospace;
+
+  /* The Ghost Bus Tours Cinematic Palette */
+  --color-canvas: #050506;
+  --color-surface-base: #050506;
+  --color-surface-muted: #0A0B10;
+  --color-surface-raised: #111A29;
+  --color-border-subtle: rgba(121, 0, 9, 0.32);
+  --color-border-strong: rgba(121, 0, 9, 0.6);
+
+  --color-text-primary: #F2EEE9;
+  --color-text-secondary: #92929A;
+  --color-text-tertiary: #A8A5B2;
+
+  --color-crimson-deep: #790009;
+  --color-crimson-primary: #C00012;
+  --color-crimson-highlight: #F00018;
+
+  /* Platform Backward-Compatible Aliases */
+  --color-gothic-black: #050506;
+  --color-gothic-navy: #0A0B10;
+  --color-charcoal-base: #0A0B10;
+  --color-charcoal-card: #0A0B10;
+  --color-charcoal-elevated: #111A29;
+
+  --color-text-offwhite: #F2EEE9;
+  --color-text-ivory: #F2EEE9;
+  --color-text-muted: #92929A;
+
+  /* Radius Tokens */
+  --radius-xs: 3px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 50px;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  /* Spacing Scale */
+  --space-1: 4px;
+  --space-2: 12px;
+  --space-3: 14.4px;
+  --space-4: 15px;
+  --space-5: 24px;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* Typography Scale */
+  --font-size-xs: 10px;
+  --font-size-sm: 11px;
+  --font-size-md: 12px;
+  --font-size-lg: 14px;
+  --font-size-xl: 15px;
+  --font-size-2xl: 16px;
+  --font-size-3xl: 18px;
+  --font-size-4xl: 22px;
+  --font-size-base: 30px;
+  --font-line-height-base: 39px;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Radius Tokens */
+  --radius-xs: 3px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 50px;
+
+  /* Motion Duration Tokens */
+  --motion-instant: 200ms;
+  --motion-fast: 300ms;
+  --motion-normal: 400ms;
+  --motion-slow: 500ms;
+
+  /* Surface and Accent Colors */
+  --background: #050506;
+  --foreground: #F2EEE9;
+  --card-bg: #0A0B10;
+  --card-border: rgba(121, 0, 9, 0.32);
+  --accent-crimson: #C00012;
+  --accent-deep: #790009;
+  --accent-highlight: #F00018;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #050506;
+  color: #F2EEE9;
+  font-family: var(--font-ibm-plex), "IBM Plex Mono", monospace;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* WCAG 2.2 AA Keyboard-First Focus Visible System */
+:focus-visible {
+  outline: 2px solid #C00012 !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 12px rgba(192, 0, 18, 0.6) !important;
+}
+
+.font-bodoni {
+  font-family: var(--font-bodoni), "Bodoni Moda", serif;
+  letter-spacing: 0.04em;
+}
+
+.font-cormorant {
+  font-family: var(--font-cormorant), "Cormorant SC", serif;
+  letter-spacing: 0.06em;
+}
+
+.font-mono-plex {
+  font-family: var(--font-ibm-plex), "IBM Plex Mono", monospace;
+}
+
+.font-oswald {
+  font-family: var(--font-oswald), "Oswald", sans-serif;
+  letter-spacing: 0.05em;
+}
+
+.font-cinzel {
+  font-family: var(--font-bodoni), "Bodoni Moda", serif;
+  letter-spacing: 0.04em;
+}
+
+.font-cinzel-decorative {
+  font-family: var(--font-cormorant), "Cormorant SC", serif;
+  letter-spacing: 0.06em;
+}
+
+.font-gothic {
+  font-family: var(--font-bodoni), "Bodoni Moda", serif;
+}
+
+.font-condensed {
+  font-family: var(--font-oswald), "Oswald", sans-serif;
+}
+
+.font-mono {
+  font-family: var(--font-ibm-plex), "IBM Plex Mono", monospace;
+}
+
+/* Distressed Ivory & Crimson Typography */
+.text-distressed-ivory {
+  color: #F2EEE9;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.95), 0 0 14px rgba(242, 238, 233, 0.16);
+  letter-spacing: 0.04em;
+}
+
+.text-distressed-crimson {
+  color: #C00012;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.95), 0 0 18px rgba(192, 0, 18, 0.5);
+}
+
+/* Multi-layered Atmospheric Backgrounds */
+.bg-ambient-gothic {
+  background: 
+    radial-gradient(circle at 18% 12%, rgba(121, 0, 9, 0.18) 0%, transparent 45%),
+    radial-gradient(circle at 82% 16%, rgba(17, 26, 41, 0.5) 0%, transparent 50%),
+    radial-gradient(circle at 50% 90%, rgba(121, 0, 9, 0.12) 0%, transparent 60%),
+    linear-gradient(180deg, #0A0B10 0%, #050506 100%);
+  position: relative;
+}
+
+/* Radial Vignette & Atmospheric Mask Layers */
+.bg-radial-vignette {
+  background: radial-gradient(ellipse at center, transparent 35%, rgba(5, 5, 6, 0.94) 100%);
+}
+
+.bg-crimson-vignette {
+  background: radial-gradient(ellipse at 50% 20%, rgba(192, 0, 18, 0.14) 0%, transparent 65%);
+}
+
+/* Textured Surface Overlay (Victorian stippled noise grain) */
+.bg-gothic-texture {
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(121, 0, 9, 0.1) 0%, transparent 55%),
+    radial-gradient(circle at 85% 30%, rgba(17, 26, 41, 0.45) 0%, transparent 60%),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.035'/%3E%3C/svg%3E");
+}
+
+/* Atmospheric Fog Drift Animation */
+@keyframes fog-drift {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translate3d(-20px, 10px, 0);
+    opacity: 0.55;
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0.35;
+  }
+}
+
+.animate-fog-drift {
+  animation: fog-drift 18s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+/* Slow Ambient Crimson Glow */
+@keyframes crimson-ambient {
+  0%, 100% {
+    opacity: 0.14;
+    filter: blur(40px);
+  }
+  50% {
+    opacity: 0.28;
+    filter: blur(55px);
+  }
+}
+
+.animate-crimson-ambient {
+  animation: crimson-ambient 8s ease-in-out infinite;
+}
+
+/* The Ghost Bus Tours Cinematic Panels & Cards */
+.gothic-panel {
+  background-color: #0A0B10;
+  border: 1px solid rgba(121, 0, 9, 0.35);
+  border-radius: 8px;
+  box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.85), 0 0 16px -4px rgba(121, 0, 9, 0.2);
+  transition: border-color 300ms ease, box-shadow 300ms ease;
+}
+
+.gothic-panel:hover {
+  border-color: rgba(192, 0, 18, 0.55);
+  box-shadow: 0 6px 28px -2px rgba(0, 0, 0, 0.9), 0 0 22px -2px rgba(192, 0, 18, 0.28);
+}
+
+.gothic-panel-interactive {
+  background-color: #0A0B10;
+  border: 1px solid rgba(121, 0, 9, 0.35);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.85);
+  transition: all 300ms ease;
+}
+
+.gothic-panel-interactive:hover {
+  border-color: rgba(240, 0, 24, 0.6);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 30px -4px rgba(192, 0, 18, 0.28);
+}
+
+/* Custom Gothic scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #050506;
+}
+::-webkit-scrollbar-thumb {
+  background: #1c0609;
+  border: 1px solid rgba(121, 0, 9, 0.4);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #C00012;
+}
+
+/* Radar pulse & crimson beacon animations */
+@keyframes crimson-pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(240, 0, 24, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px rgba(240, 0, 24, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(240, 0, 24, 0);
+  }
+}
+
+.animate-crimson-pulse {
+  animation: crimson-pulse 2s infinite;
+}
+
+@keyframes crimson-beacon {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: drop-shadow(0 0 6px #F00018);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.95);
+    filter: drop-shadow(0 0 2px #790009);
+  }
+}
+
+.animate-beacon {
+  animation: crimson-beacon 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Logo Ambient Glow Animation */
+@keyframes vigilora-glow {
+  0%, 100% {
+    box-shadow: 0 0 16px -2px rgba(192, 0, 18, 0.35), 0 0 28px -4px rgba(121, 0, 9, 0.25);
+    filter: drop-shadow(0 0 6px rgba(192, 0, 18, 0.3));
+  }
+  50% {
+    box-shadow: 0 0 26px 2px rgba(240, 0, 24, 0.5), 0 0 42px 0px rgba(121, 0, 9, 0.4);
+    filter: drop-shadow(0 0 14px rgba(240, 0, 24, 0.45));
+  }
+}
+
+.animate-vigilora-glow {
+  animation: vigilora-glow 3.5s ease-in-out infinite;
+}
+
+/* Ghost Bus Tours Raised Button */
+.btn-gothic-crimson {
+  background: linear-gradient(135deg, #F00018 0%, #C00012 55%, #790009 100%);
+  color: #FFFFFF;
+  font-family: var(--font-oswald), sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 700;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 18px rgba(192, 0, 18, 0.45);
+  transition: all 300ms ease;
+}
+
+.btn-gothic-crimson:hover {
+  background: linear-gradient(135deg, #FF1A26 0%, #D40014 55%, #8E000B 100%);
+  box-shadow: 0 6px 26px rgba(240, 0, 24, 0.65);
+  transform: translateY(-1px);
+}
+
+.btn-gothic-crimson:focus-visible {
+  outline: 2px solid #FFFFFF;
+  outline-offset: 2px;
+}
+
+.btn-gothic-charcoal {
+  background-color: #0A0B10;
+  color: #F2EEE9;
+  font-family: var(--font-oswald), sans-serif;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid rgba(121, 0, 9, 0.4);
+  transition: all 300ms ease;
+}
+
+.btn-gothic-charcoal:hover {
+  background-color: #111A29;
+  border-color: #C00012;
+  color: #FFFFFF;
+  box-shadow: 0 0 14px rgba(192, 0, 18, 0.3);
+}
+
+.btn-gothic-charcoal:focus-visible {
+  outline: 2px solid #C00012;
+  outline-offset: 2px;
 }
