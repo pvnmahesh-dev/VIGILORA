@@ -534,7 +534,7 @@ export async function createSession(
     new PutCommand({
       TableName: DYNAMODB_TABLE,
       Item: {
-        pk: user.campusId,
+        pk: getCampusPartitionKey(),
         sk: `SESSION#${tokenHash}`,
         ...sessionRecord,
         entityType: "SESSION",
@@ -545,10 +545,10 @@ export async function createSession(
   return { plainToken, expiresAt };
 }
 
-export async function revokeSession(plainToken: string, campusId?: string): Promise<boolean> {
+export async function revokeSession(plainToken: string): Promise<boolean> {
   if (!plainToken) return false;
   const tokenHash = hashToken(plainToken);
-  const campusPk = getCampusPartitionKey(campusId);
+  const campusPk = getCampusPartitionKey();
 
   try {
     await docClient.send(
@@ -603,6 +603,8 @@ export async function verifySessionFromRequest(
   if (!plainToken) return null;
 
   const tokenHash = hashToken(plainToken);
+  // Session resolution is strictly bounded to server-side partition.
+  // Client headers cannot manipulate or override campus identity.
   const campusPk = getCampusPartitionKey();
 
   try {

@@ -17,12 +17,46 @@ import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { S3Client, HeadBucketCommand } from "@aws-sdk/client-s3";
 import { STSClient } from "@aws-sdk/client-sts";
 import { fromLoginCredentials, fromNodeProviderChain } from "@aws-sdk/credential-providers";
+import { loadEnvConfig } from "@next/env";
+
+// Ensure local .env and .env.local files are loaded when executing outside Next.js runtime in development/test
+if (process.env.NODE_ENV !== "production" && !process.env.S3_BUCKET && typeof process !== "undefined" && typeof window === "undefined") {
+  try {
+    loadEnvConfig(process.cwd());
+  } catch {
+    // Environment files already loaded or filesystem unavailable
+  }
+}
 
 // 1. Environment & Configuration Constants
 export const AWS_REGION = process.env.AWS_REGION || "eu-north-1";
 export const DYNAMODB_TABLE = process.env.DYNAMODB_TABLE || "VIGILORA-Main";
-export const S3_BUCKET = process.env.S3_BUCKET || "vigilora-evidence-399527676157-eu-north-1-an";
 export const DEFAULT_CAMPUS_ID = process.env.VIGILORA_CAMPUS_ID || "CAMPUS#METROPOLIS";
+
+/**
+ * Resolves the S3 bucket for evidence storage.
+ * In production (NODE_ENV === "production"), process.env.S3_BUCKET must be explicitly configured.
+ * If missing, throws a clear configuration error rather than silently defaulting to an arbitrary bucket.
+ */
+function resolveS3Bucket(): string {
+  const bucket = process.env.S3_BUCKET?.trim();
+  if (bucket && bucket.length > 0) {
+    return bucket;
+  }
+
+  const isProduction = process.env.NODE_ENV === "production";
+  if (isProduction) {
+    throw new Error(
+      "VIGILORA Configuration Error: Missing required environment variable 'S3_BUCKET' in production. " +
+      "Configure S3_BUCKET in your environment to point to your authorized S3 evidence storage bucket."
+    );
+  }
+
+  // Safe development/test fallback when S3_BUCKET is not explicitly set
+  return process.env.S3_DEV_BUCKET || "vigilora-evidence-dev";
+}
+
+export const S3_BUCKET = resolveS3Bucket();
 
 // 2. Credential Resolution Strategy
 // Prioritizes AWS CLI login credentials (aws login) with fallback to standard Node credential chain (env vars, IAM roles)
@@ -72,8 +106,9 @@ export const stsClient = new STSClient({
 
 // 6. Partition Key Helpers
 export function getCampusPartitionKey(campusId?: string): string {
-  if (!campusId) return DEFAULT_CAMPUS_ID;
-  return campusId.startsWith("CAMPUS#") ? campusId : `CAMPUS#${campusId}`;
+  const id = (campusId || DEFAULT_CAMPUS_ID || "CAMPUS#METROPOLIS").trim();
+  if (id === "CAMPUS" || id.length === 0) return "CAMPUS#METROPOLIS";
+  return id.startsWith("CAMPUS#") ? id : `CAMPUS#${id}`;
 }
 
 // 7. Health Check Verification Utility

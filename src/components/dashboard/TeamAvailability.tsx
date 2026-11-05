@@ -40,7 +40,7 @@ export function TeamAvailability() {
         {teams.map((team) => (
           <div
             key={team.id}
-            className="p-3 rounded-lg bg-[#0c1219] border border-[#87000A]/20 hover:border-[#C90012]/40 transition-colors"
+            className="p-3 rounded-lg bg-[#0c1219] border border-[#87000A]/20 hover:border-[#C90012]/50 hover:bg-[#111A29]/60 hover:-translate-y-0.5 transition-all duration-200 card-interactive cursor-default"
           >
             <div className="flex items-start justify-between gap-2 mb-1.5">
               <div>
@@ -56,11 +56,22 @@ export function TeamAvailability() {
               </div>
 
               <span
-                className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-medium border ${getStatusColor(
+                className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono font-medium border transition-colors ${getStatusColor(
                   team.status
                 )}`}
               >
-                {team.status}
+                <span
+                  className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                    team.status === "Available"
+                      ? "bg-emerald-400"
+                      : team.status === "On Scene"
+                      ? "bg-[#F01420]"
+                      : team.status === "En Route"
+                      ? "bg-[#FF7700]"
+                      : "bg-[#85858B]"
+                  }`}
+                />
+                <span>{team.status}</span>
               </span>
             </div>
 

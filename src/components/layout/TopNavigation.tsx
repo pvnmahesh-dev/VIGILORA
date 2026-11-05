@@ -181,11 +181,10 @@ export function TopNavigation({
         {/* Application Availability Status Badge */}
         <div
           title="VIGILORA Terminal Online — Application operational"
-          className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full text-xs font-oswald uppercase tracking-wider bg-[#041a0d] border border-emerald-500/35 text-emerald-400 transition-colors"
+          className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full text-xs font-oswald uppercase tracking-wider bg-[#041a0d] border border-emerald-500/35 text-emerald-400 transition-colors shadow-[0_0_8px_rgba(16,185,129,0.15)]"
         >
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+            <span className="animate-operational-pulse inline-flex rounded-full h-2 w-2 bg-emerald-400" />
           </span>
           <span>ONLINE</span>
         </div>
@@ -200,14 +199,13 @@ export function TopNavigation({
         <div className="relative">
           <button
             onClick={() => setNotificationsOpen(!notificationsOpen)}
-            className="relative p-2 rounded-md text-[#92929A] hover:text-[#F2EEE9] hover:bg-white/5 transition-colors border border-transparent hover:border-[#790009]/40"
+            className="relative p-2 rounded-md text-[#92929A] hover:text-[#F2EEE9] hover:bg-white/5 transition-all duration-200 border border-transparent hover:border-[#790009]/40 active:scale-[0.95]"
             aria-label="Alerts"
           >
             <Bell className="w-4 h-4" />
             {criticalIncidents.length > 0 && (
               <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F00018] opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#F00018]" />
+                <span className="animate-critical-pulse inline-flex rounded-full h-2 w-2 bg-[#F00018]" />
               </span>
             )}
           </button>

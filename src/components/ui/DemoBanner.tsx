@@ -19,19 +19,25 @@ export function DemoBanner({ className, compact = false }: DemoBannerProps) {
     recheck,
   } = useAwsPreflight();
   const [resetSuccess, setResetSuccess] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleReset = async () => {
-    resetDemoData();
-    await recheck();
-    setResetSuccess(true);
-    setTimeout(() => setResetSuccess(false), 2000);
+    setIsRefreshing(true);
+    try {
+      resetDemoData();
+      await recheck();
+      setResetSuccess(true);
+      setTimeout(() => setResetSuccess(false), 2000);
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   if (compact) {
     return (
       <div
         className={cn(
-          "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-oswald font-semibold tracking-wider uppercase",
+          "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-oswald font-semibold tracking-wider uppercase transition-colors",
           awsStatus === "connected"
             ? "bg-[#041a0d] text-emerald-400 border border-emerald-500/35"
             : "bg-[#180306] text-[#F00018] border border-[#F00018]/60",
@@ -40,8 +46,8 @@ export function DemoBanner({ className, compact = false }: DemoBannerProps) {
       >
         <span
           className={cn(
-            "w-1.5 h-1.5 rounded-full",
-            awsStatus === "connected" ? "bg-emerald-400 animate-pulse" : "bg-[#F00018] animate-pulse"
+            "w-1.5 h-1.5 rounded-full shrink-0",
+            awsStatus === "connected" ? "bg-emerald-400 animate-operational-pulse" : "bg-[#F00018]"
           )}
         />
         <span>{awsStatus === "connected" ? "AWS CONNECTED" : "AWS DISCONNECTED"}</span>
@@ -119,11 +125,12 @@ export function DemoBanner({ className, compact = false }: DemoBannerProps) {
         <button
           type="button"
           onClick={handleReset}
-          className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono font-medium tracking-wider uppercase bg-white/5 hover:bg-white/10 text-zinc-300 border border-[#790009]/30 transition-colors"
+          disabled={isRefreshing}
+          className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono font-medium tracking-wider uppercase bg-white/5 hover:bg-white/10 hover:border-[#C00012]/40 text-zinc-300 border border-[#790009]/30 transition-all active:scale-[0.98] disabled:opacity-50"
           title="Synchronize state from AWS backend"
         >
-          <RotateCcw className="w-2.5 h-2.5 text-zinc-400" />
-          <span>Refresh Live Grid</span>
+          <RotateCcw className={cn("w-2.5 h-2.5 text-zinc-400 transition-transform", isRefreshing && "animate-spin text-white")} />
+          <span>{isRefreshing ? "Syncing..." : "Refresh Live Grid"}</span>
         </button>
 
         <div
@@ -136,23 +143,16 @@ export function DemoBanner({ className, compact = false }: DemoBannerProps) {
             "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[10px] font-mono font-medium tracking-wider uppercase transition-colors",
             awsStatus === "connected"
               ? "bg-[#041a0d] text-emerald-400 border border-emerald-500/35"
-              : "bg-[#180306] text-[#F00018] border border-[#F00018]/60 font-bold animate-pulse"
+              : "bg-[#180306] text-[#F00018] border border-[#F00018]/60 font-semibold"
           )}
         >
-          <span className="relative flex h-1.5 w-1.5 shrink-0">
-            <span
-              className={cn(
-                "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75",
-                awsStatus === "connected" ? "bg-emerald-400" : "bg-[#F00018]"
-              )}
-            />
-            <span
-              className={cn(
-                "relative inline-flex rounded-full h-1.5 w-1.5",
-                awsStatus === "connected" ? "bg-emerald-500" : "bg-[#F00018]"
-              )}
-            />
-          </span>
+          {awsStatus === "connected" ? (
+            <span className="relative flex h-1.5 w-1.5 shrink-0">
+              <span className="animate-operational-pulse inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
+            </span>
+          ) : (
+            <span className="inline-flex rounded-full h-1.5 w-1.5 bg-[#F00018] shrink-0" />
+          )}
           <span>{awsStatus === "connected" ? "AWS CONNECTED" : "AWS DISCONNECTED"}</span>
         </div>
       </div>

@@ -238,7 +238,10 @@ export function RightInspector({
 
       {/* 8. Selected Incident Card */}
       {selectedIncident && (
-        <div className="mt-2 p-3.5 rounded-md bg-[#111A29]/70 border border-[#790009]/40 space-y-3 relative overflow-hidden shadow-lg">
+        <div
+          key={selectedIncident.id}
+          className="mt-2 p-3.5 rounded-md bg-[#111A29]/70 border border-[#790009]/40 space-y-3 relative overflow-hidden shadow-lg animate-page-enter card-interactive"
+        >
           <div className="flex items-center justify-between pb-2 border-b border-[#790009]/25">
             <div className="flex items-center gap-2">
               <FileText className="w-3.5 h-3.5 text-[#F00018]" />

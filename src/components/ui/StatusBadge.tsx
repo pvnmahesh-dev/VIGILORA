@@ -30,13 +30,13 @@ export function StatusBadge({
     },
     "Under review": {
       bg: "bg-[#1E1B4B]/35 text-[#818CF8] border-[#6366F1]/40",
-      dot: "bg-[#818CF8] animate-pulse",
+      dot: "bg-[#818CF8]",
       icon: Search,
       label: "Under Review",
     },
     "Under Review": {
       bg: "bg-[#1E1B4B]/35 text-[#818CF8] border-[#6366F1]/40",
-      dot: "bg-[#818CF8] animate-pulse",
+      dot: "bg-[#818CF8]",
       icon: Search,
       label: "Under Review",
     },
@@ -48,7 +48,7 @@ export function StatusBadge({
     },
     Responding: {
       bg: "bg-[#7A1F0D]/30 text-[#FB923C] border-[#EA580C]/50 shadow-[0_0_10px_rgba(234,88,12,0.25)]",
-      dot: "bg-[#FB923C] animate-beacon",
+      dot: "bg-[#FB923C] animate-active-pulse",
       icon: Flame,
       label: "Responding",
     },

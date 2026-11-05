@@ -59,8 +59,8 @@ function renderSeverityBadge(severity: IncidentSeverity) {
   switch (severity) {
     case "Critical":
       return (
-        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-oswald uppercase tracking-wider font-bold bg-[#790009]/35 text-[#F00018] border border-[#C00012]/60 shadow-[0_0_8px_rgba(240,0,24,0.3)]">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#F00018] animate-pulse" />
+        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-oswald uppercase tracking-wider font-bold bg-[#790009]/35 text-[#F00018] border border-[#C00012]/60 shadow-[0_0_8px_rgba(240,0,24,0.3)] animate-critical-pulse">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#F00018] animate-critical-pulse" />
           <span>Critical</span>
         </span>
       );
@@ -94,7 +94,7 @@ function renderStatusBadge(status: IncidentStatus | string) {
     case "Responding":
       return (
         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-oswald uppercase tracking-wider font-semibold bg-[#7A1F0D]/30 text-[#FB923C] border border-[#EA580C]/50 shadow-[0_0_8px_rgba(234,88,12,0.2)]">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#FB923C]" />
+          <span className="w-1.5 h-1.5 rounded-full bg-[#FB923C] animate-active-pulse" />
           <span>Responding</span>
         </span>
       );

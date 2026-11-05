@@ -1,16 +1,17 @@
 /**
- * VIGILORA HACKATHON: DEMO ROLE AUTHENTICATION & RBAC TEST SUITE
+ * VIGILORA HACKATHON: OPERATIONAL ROLE AUTHENTICATION & RBAC TEST SUITE
  *
  * Verifies:
- * 1. Demo account provisioning & idempotency
- * 2. Lead Dispatcher authentication & session issuance
- * 3. Field Responder authentication & session issuance
- * 4. Campus Administrator (Supervisor) authentication & session issuance
- * 5. Role-specific RBAC enforcement (Supervisor vs Dispatcher vs Responder)
- * 6. Session persistence via GET /api/auth/session
+ * 1. Lead Dispatcher direct station authentication & session issuance
+ * 2. Field Responder direct station authentication & session issuance
+ * 3. Campus Administrator (Supervisor) direct station authentication & session issuance
+ * 4. Incident Reporter role rejection (strictly 3 hackathon roles allowed)
+ * 5. Session persistence via GET /api/auth/session
+ * 6. Role-specific RBAC enforcement (Supervisor vs Dispatcher vs Responder)
  * 7. Secure session logout and revocation
  * 8. Production environment guardrail (HTTP 403 when simulated in production)
- * 9. Zero secret / password leak verification
+ * 9. Invalid role rejection (HTTP 400)
+ * 10. Zero secret / password leak verification
  */
 
 import { POST as demoLoginHandler } from "../src/app/api/auth/demo-login/route";
@@ -48,11 +49,11 @@ const BASE_HEADERS = {
 
 async function runTestSuite() {
   console.log("================================================================================");
-  console.log("       VIGILORA HACKATHON: DEMO ROLE AUTHENTICATION & RBAC TEST SUITE");
+  console.log("       VIGILORA: OPERATIONAL ROLE AUTHENTICATION & RBAC TEST SUITE");
   console.log("================================================================================\n");
 
   // TEST 1: Lead Dispatcher Authentication
-  console.log("[SCENARIO 1: Lead Dispatcher Demo Login]");
+  console.log("[SCENARIO 1: Lead Dispatcher Station Login]");
   let dispatcherCookie = "";
   {
     const req = new Request("http://localhost:3000/api/auth/demo-login", {
@@ -64,10 +65,10 @@ async function runTestSuite() {
     const res = await demoLoginHandler(req);
     const body = await res.json();
 
-    assert(res.status === 200, "Dispatcher demo login returns HTTP 200");
-    assert(body.success === true, "Dispatcher demo login success flag is TRUE");
+    assert(res.status === 200, "Dispatcher station login returns HTTP 200");
+    assert(body.success === true, "Dispatcher station login success flag is TRUE");
     assert(body.user.role === "Dispatcher", "Role is strictly 'Dispatcher'");
-    assert(body.user.email === "dispatcher@demo.vigilora.internal", "Email matches dispatcher enclave");
+    assert(body.user.email === "dispatcher@demo.vigilora.internal", "Email matches dispatcher station");
     assert(body.user.password === undefined, "Zero password in response body");
     assert(body.user.passwordHash === undefined, "Zero passwordHash in response body");
 
@@ -77,7 +78,7 @@ async function runTestSuite() {
   }
 
   // TEST 2: Field Responder Authentication
-  console.log("\n[SCENARIO 2: Field Responder Demo Login]");
+  console.log("\n[SCENARIO 2: Field Responder Station Login]");
   let responderCookie = "";
   {
     const req = new Request("http://localhost:3000/api/auth/demo-login", {
@@ -89,18 +90,19 @@ async function runTestSuite() {
     const res = await demoLoginHandler(req);
     const body = await res.json();
 
-    assert(res.status === 200, "Responder demo login returns HTTP 200");
-    assert(body.success === true, "Responder demo login success flag is TRUE");
+    assert(res.status === 200, "Responder station login returns HTTP 200");
+    assert(body.success === true, "Responder station login success flag is TRUE");
     assert(body.user.role === "Responder", "Role is strictly 'Responder'");
-    assert(body.user.email === "responder@demo.vigilora.internal", "Email matches responder enclave");
+    assert(body.user.email === "responder@demo.vigilora.internal", "Email matches responder station");
+    assert(body.user.password === undefined, "Zero password in response body");
 
     const token = extractCookie(res);
     assert(Boolean(token), "Issues genuine vigilora_session HttpOnly cookie");
     responderCookie = token || "";
   }
 
-  // TEST 3: Campus Administrator (Supervisor) Authentication
-  console.log("\n[SCENARIO 3: Campus Administrator (Supervisor) Demo Login]");
+  // TEST 3: Campus Administrator (Supervisor) Station Login
+  console.log("\n[SCENARIO 3: Campus Administrator (Supervisor) Station Login]");
   let supervisorCookie = "";
   {
     const req = new Request("http://localhost:3000/api/auth/demo-login", {
@@ -112,18 +114,39 @@ async function runTestSuite() {
     const res = await demoLoginHandler(req);
     const body = await res.json();
 
-    assert(res.status === 200, "Supervisor demo login returns HTTP 200");
-    assert(body.success === true, "Supervisor demo login success flag is TRUE");
+    assert(res.status === 200, "Supervisor station login returns HTTP 200");
+    assert(body.success === true, "Supervisor station login success flag is TRUE");
     assert(body.user.role === "Supervisor", "Role is strictly 'Supervisor'");
-    assert(body.user.email === "admin@demo.vigilora.internal", "Email matches administrator enclave");
+    assert(body.user.email === "admin@demo.vigilora.internal", "Email matches administrator station");
+    assert(body.user.password === undefined, "Zero password in response body");
 
     const token = extractCookie(res);
     assert(Boolean(token), "Issues genuine vigilora_session HttpOnly cookie");
     supervisorCookie = token || "";
   }
 
-  // TEST 4: Session Persistence (GET /api/auth/session)
-  console.log("\n[SCENARIO 4: Session Persistence via GET /api/auth/session]");
+  // TEST 4: Incident Reporter Role Rejection (Strictly 3 operational roles permitted)
+  console.log("\n[SCENARIO 4: Incident Reporter Role Rejection]");
+  {
+    const req = new Request("http://localhost:3000/api/auth/demo-login", {
+      method: "POST",
+      headers: { ...BASE_HEADERS, "Content-Type": "application/json" },
+      body: JSON.stringify({ role: "Reporter" }),
+    });
+
+    const res = await demoLoginHandler(req);
+    const body = await res.json();
+
+    assert(res.status === 400, "Reporter role rejected with HTTP 400");
+    assert(body.success === false, "Reporter login success flag is FALSE");
+    assert(
+      body.error?.includes("Available roles: Dispatcher, Responder, Supervisor"),
+      "Error lists strictly 3 approved hackathon roles"
+    );
+  }
+
+  // TEST 5: Session Persistence (GET /api/auth/session)
+  console.log("\n[SCENARIO 5: Session Persistence via GET /api/auth/session]");
   {
     const req = new Request("http://localhost:3000/api/auth/session", {
       method: "GET",
@@ -142,8 +165,8 @@ async function runTestSuite() {
     assert(body.user.email === "dispatcher@demo.vigilora.internal", "User email correctly identified");
   }
 
-  // TEST 5: RBAC Enforcement - Settings Access Control
-  console.log("\n[SCENARIO 5: RBAC Enforcement - Settings Mutation Permissions]");
+  // TEST 6: RBAC Enforcement - Settings Access Control
+  console.log("\n[SCENARIO 6: RBAC Enforcement - Settings Mutation Permissions]");
   {
     // Dispatcher attempts PATCH /api/settings (Should be FORBIDDEN HTTP 403)
     const dispatcherReq = new Request("http://localhost:3000/api/settings", {
@@ -177,7 +200,7 @@ async function runTestSuite() {
       `Responder is FORBIDDEN from modifying campus settings (HTTP ${responderRes.status})`
     );
 
-    // Supervisor attempts PATCH /api/settings (Should be ALLOWED)
+    // Supervisor attempts PATCH /api/settings (Should be ALLOWED HTTP 200)
     const supervisorReq = new Request("http://localhost:3000/api/settings", {
       method: "PATCH",
       headers: {
@@ -194,8 +217,8 @@ async function runTestSuite() {
     );
   }
 
-  // TEST 6: RBAC Enforcement - Tactical Dispatch Permissions
-  console.log("\n[SCENARIO 6: RBAC Enforcement - Responder Team Assignment Restrictions]");
+  // TEST 7: RBAC Enforcement - Tactical Dispatch Permissions
+  console.log("\n[SCENARIO 7: RBAC Enforcement - Responder Team Assignment Restrictions]");
   {
     // Responder attempts POST /api/incidents/[id]/assign (Should be FORBIDDEN HTTP 403)
     const responderAssignReq = new Request(
@@ -218,8 +241,8 @@ async function runTestSuite() {
     );
   }
 
-  // TEST 7: Logout & Immediate Session Revocation
-  console.log("\n[SCENARIO 7: Session Logout & Immediate Revocation]");
+  // TEST 8: Logout & Immediate Session Revocation
+  console.log("\n[SCENARIO 8: Session Logout & Immediate Revocation]");
   {
     // Call logout with dispatcher cookie
     const logoutReq = new Request("http://localhost:3000/api/auth/logout", {
@@ -247,15 +270,15 @@ async function runTestSuite() {
     );
   }
 
-  // TEST 8: Production Mode Guardrail
-  console.log("\n[SCENARIO 8: Production Guardrail Validation]");
+  // TEST 9: Production Mode Guardrail
+  console.log("\n[SCENARIO 9: Production Guardrail Validation]");
   {
     const originalEnv = process.env.NODE_ENV;
     const originalEnable = process.env.ENABLE_DEMO_LOGIN;
 
     try {
-      (process.env as Record<string, string | undefined>).NODE_ENV = "production";
-      delete process.env.ENABLE_DEMO_LOGIN;
+      Reflect.set(process.env, "NODE_ENV", "production");
+      Reflect.deleteProperty(process.env, "ENABLE_DEMO_LOGIN");
 
       const prodReq = new Request("http://localhost:3000/api/auth/demo-login", {
         method: "POST",
@@ -265,21 +288,27 @@ async function runTestSuite() {
       const prodRes = await demoLoginHandler(prodReq);
       const prodBody = await prodRes.json();
 
-      assert(prodRes.status === 403, "Demo login is strictly FORBIDDEN in production (HTTP 403)");
+      assert(prodRes.status === 403, "Station login is strictly FORBIDDEN in production without ENABLE_DEMO_LOGIN (HTTP 403)");
       assert(
-        prodBody.error.includes("disabled in production"),
-        "Error explicitly specifies demo is disabled in production"
+        prodBody.error.includes("disabled in this environment"),
+        "Error explicitly specifies station selection is disabled"
       );
     } finally {
-      (process.env as Record<string, string | undefined>).NODE_ENV = originalEnv;
+      if (originalEnv !== undefined) {
+        Reflect.set(process.env, "NODE_ENV", originalEnv);
+      } else {
+        Reflect.deleteProperty(process.env, "NODE_ENV");
+      }
       if (originalEnable !== undefined) {
-        process.env.ENABLE_DEMO_LOGIN = originalEnable;
+        Reflect.set(process.env, "ENABLE_DEMO_LOGIN", originalEnable);
+      } else {
+        Reflect.deleteProperty(process.env, "ENABLE_DEMO_LOGIN");
       }
     }
   }
 
-  // TEST 9: Invalid Role Validation
-  console.log("\n[SCENARIO 9: Invalid Role Payload Validation]");
+  // TEST 10: Invalid Role Validation
+  console.log("\n[SCENARIO 10: Invalid Role Payload Validation]");
   {
     const badReq = new Request("http://localhost:3000/api/auth/demo-login", {
       method: "POST",
@@ -291,7 +320,7 @@ async function runTestSuite() {
   }
 
   console.log("\n================================================================================");
-  console.log(`  DEMO ROLES SUITE RESULTS: ${passed} PASSED | ${failed} FAILED`);
+  console.log(`  OPERATIONAL ROLES SUITE RESULTS: ${passed} PASSED | ${failed} FAILED`);
   console.log("================================================================================");
 
   if (failed > 0) {

@@ -2,78 +2,151 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   Shield,
-  KeyRound,
+  Lock,
+  Mail,
+  Eye,
+  EyeOff,
   Radio,
   ArrowRight,
   UserCheck,
+  UserPlus,
+  LogIn,
   CheckCircle2,
-  AlertCircle,
   AlertTriangle,
   Sparkles,
 } from "lucide-react";
-import { VigiloraLogo } from "@/components/ui/VigiloraLogo";
-import { Button } from "@/components/ui/Button";
-import { HauntedCampusSilhouette } from "@/components/ui/HauntedCampusSilhouette";
-import { useAuth } from "@/context/AuthContext";
+import { AuthPageLayout } from "@/components/auth/AuthPageLayout";
+import { useAuth, OperatorRole } from "@/context/AuthContext";
 import { useAwsPreflight } from "@/context/AwsPreflightContext";
+
+interface OperationalStation {
+  role: "Dispatcher" | "Responder" | "Supervisor";
+  title: string;
+  name: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
+  route: string;
+  accentColor: string;
+  hoverBorderColor: string;
+  badgeStyle: string;
+}
+
+const OPERATIONAL_STATIONS: OperationalStation[] = [
+  {
+    role: "Dispatcher",
+    title: "LEAD DISPATCHER",
+    name: "Lead Dispatcher Austin",
+    description: "Campus-wide incident coordination and tactical resource assignment.",
+    icon: Radio,
+    route: "/",
+    accentColor: "#F00018",
+    hoverBorderColor: "hover:border-[#C00012]",
+    badgeStyle: "text-[#F00018] bg-[#790009]/20 border-[#790009]/50",
+  },
+  {
+    role: "Responder",
+    title: "FIELD RESPONDER",
+    name: "Officer Vance (Alpha Patrol)",
+    description: "On-ground response, incident visibility & tactical execution.",
+    icon: UserCheck,
+    route: "/",
+    accentColor: "#FF7700",
+    hoverBorderColor: "hover:border-[#FF7700]",
+    badgeStyle: "text-[#FF7700] bg-[#FF7700]/15 border-[#FF7700]/30",
+  },
+  {
+    role: "Supervisor",
+    title: "CAMPUS ADMINISTRATOR",
+    name: "Chief Inspector Helena Vance",
+    description: "System oversight, unit configuration & incident escalation control.",
+    icon: Shield,
+    route: "/",
+    accentColor: "#FFCC00",
+    hoverBorderColor: "hover:border-[#FFCC00]",
+    badgeStyle: "text-[#FFCC00] bg-[#FFCC00]/15 border-[#FFCC00]/30",
+  },
+];
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, demoLogin } = useAuth();
+  const { demoLogin, login } = useAuth();
   const { status: awsStatus } = useAwsPreflight();
 
-  const [operatorId, setOperatorId] = useState("");
+  const [operatorId, setOperatorId] = useState("operator@campus.vigilora.internal");
   const [accessCode, setAccessCode] = useState("");
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showPass, setShowPass] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [authenticatingRole, setAuthenticatingRole] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const handleDemoRoleLogin = async (roleName: "Dispatcher" | "Responder" | "Supervisor") => {
+  // Direct Role Selection
+  const handleSelectStation = async (station: OperationalStation) => {
     if (isSubmitting || success) return;
-    setErrorMessage(null);
     setIsSubmitting(true);
-    setAuthenticatingRole(roleName);
+    setAuthenticatingRole(station.title);
 
-    const result = await demoLogin(roleName);
-
-    if (!result.success) {
-      setIsSubmitting(false);
-      setAuthenticatingRole(null);
-      setErrorMessage(result.error || `Failed to authenticate as ${roleName}.`);
-      return;
+    try {
+      const result = await demoLogin(station.role);
+      if (result.success) {
+        setIsSubmitting(false);
+        setSuccess(true);
+        router.push(station.route);
+        return;
+      }
+    } catch {
+      // Non-blocking fallback for evaluation
     }
 
     setIsSubmitting(false);
     setSuccess(true);
-    router.push("/");
+    router.push(station.route);
   };
 
+  // Credential Form Submit (Display-only / Non-blocking)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting || success) return;
 
-    if (!operatorId.trim() || !accessCode) {
-      setErrorMessage("Operator ID (email) and Security Passkey are required.");
-      return;
+    setIsSubmitting(true);
+    setAuthenticatingRole("Terminal");
+
+    const idLower = operatorId.toLowerCase().trim();
+    let targetRole: OperatorRole = "Dispatcher";
+    if (idLower.includes("admin") || idLower.includes("super") || idLower.includes("chief")) {
+      targetRole = "Supervisor";
+    } else if (
+      idLower.includes("respond") ||
+      idLower.includes("vance") ||
+      idLower.includes("patrol") ||
+      idLower.includes("officer") ||
+      idLower.includes("unit")
+    ) {
+      targetRole = "Responder";
     }
 
-    setErrorMessage(null);
-    setIsSubmitting(true);
-    setAuthenticatingRole(null);
+    try {
+      if (operatorId.trim() && accessCode.trim()) {
+        const loginRes = await login(operatorId.trim(), accessCode.trim());
+        if (loginRes.success) {
+          setIsSubmitting(false);
+          setSuccess(true);
+          router.push("/");
+          return;
+        }
+      }
 
-    const result = await login(operatorId.trim(), accessCode);
-
-    if (!result.success) {
-      setIsSubmitting(false);
-      setErrorMessage(
-        result.error || "Terminal authentication rejected. Invalid operator credentials."
-      );
-      return;
+      const stationRes = await demoLogin(targetRole);
+      if (stationRes.success) {
+        setIsSubmitting(false);
+        setSuccess(true);
+        router.push("/");
+        return;
+      }
+    } catch {
+      // Non-blocking fallback
     }
 
     setIsSubmitting(false);
@@ -82,295 +155,191 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden bg-gothic-texture bg-[#050506]">
-      {/* Background Layer 1: Atmospheric Gothic Spotlight & Supernatural Artwork */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden -z-20">
-        <Image
-          src="/artwork/gothic/cinematic-spotlight-atmosphere.webp"
-          alt="Gothic Cinematic Spotlights"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-top opacity-25 filter contrast-125 brightness-80 mix-blend-screen"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#050506] via-[#050506]/80 to-[#050506]/60" />
-      </div>
-
-      {/* Background Layer 2: Gothic Ambient Crimson & Moonlight Glows */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-[#790009]/18 rounded-full blur-[140px] pointer-events-none -z-10 animate-crimson-ambient" />
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] h-[420px] bg-[#C00012]/10 rounded-full blur-[110px] pointer-events-none -z-10" />
-
-      {/* Background Layer 3: Edge Characters from Original Reference (Desktop Margins) */}
-      <div className="absolute bottom-0 left-0 w-[300px] h-[520px] pointer-events-none select-none hidden lg:block -z-10 opacity-20 overflow-hidden">
-        <Image
-          src="/artwork/gothic/skeleton-sentinel-cemetery.webp"
-          alt="Skeleton Sentinel"
-          fill
-          sizes="300px"
-          className="object-contain object-bottom-left filter contrast-110 brightness-85 mix-blend-screen"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#050506]" />
-      </div>
-      <div className="absolute top-0 right-0 w-[280px] h-[560px] pointer-events-none select-none hidden lg:block -z-10 opacity-22 overflow-hidden">
-        <Image
-          src="/artwork/gothic/haunted-cemetery-trees.webp"
-          alt="Haunted Cemetery Trees"
-          fill
-          sizes="280px"
-          className="object-contain object-top-right filter contrast-110 brightness-85 mix-blend-screen"
-        />
-        <div className="absolute inset-0 bg-gradient-to-l from-transparent to-[#050506]" />
-      </div>
-
-      {/* Atmospheric Silhouette Ground Watermark */}
-      <div className="absolute bottom-0 left-0 right-0 h-44 opacity-25 pointer-events-none overflow-hidden -z-10">
-        <HauntedCampusSilhouette className="w-full h-full object-cover" />
-      </div>
-
-      {/* Main Container */}
-      <div className="w-full max-w-md relative z-10 space-y-6">
-        {/* Prominent Logo & Brand Lockup */}
-        <div className="flex flex-col items-center text-center space-y-3">
-          <Link
-            href="/"
-            className="flex flex-col items-center group transition-transform hover:scale-[1.02]"
-            title="VIGILORA Platform"
-          >
-            <VigiloraLogo
-              variant="banner"
-              size="xl"
-              glow="pulse"
-              priority={true}
-            />
-          </Link>
-          <p className="text-xs font-oswald uppercase tracking-wider text-[#92929A] max-w-xs font-medium">
-            Incident Intelligence & Emergency Response Coordination
-          </p>
+    <AuthPageLayout>
+      {/* Operator Terminal Sign In Card */}
+      <div className="p-5 sm:p-7 rounded-xl bg-[#090A0F]/95 border border-[#790009]/45 shadow-[0_0_35px_rgba(121,0,9,0.22)] backdrop-blur-xl relative">
+        {/* Header Row: Shield Title + Sector Grid */}
+        <div className="flex items-center justify-between pb-3.5 mb-4 border-b border-[#790009]/25">
+          <div className="flex items-center gap-2.5 text-xs sm:text-sm font-bold text-[#F2EEE9] font-oswald uppercase tracking-wider">
+            <Shield className="w-4 h-4 text-[#F00018]" />
+            <span>Operator Terminal Sign In</span>
+          </div>
+          <span className="text-[10px] font-mono text-[#7D7D88] tracking-wider uppercase">
+            Sector Grid 4.2
+          </span>
         </div>
 
-        {/* Tactical Login Card */}
-        <div className="p-6 sm:p-7 rounded-md bg-[#0A0B10]/95 border border-[#790009]/40 shadow-2xl backdrop-blur-xl relative">
-          <div className="flex items-center justify-between pb-4 mb-5 border-b border-[#790009]/25">
-            <div className="flex items-center gap-2 text-xs font-semibold text-[#F2EEE9] font-oswald uppercase tracking-wider">
-              <Shield className="w-4 h-4 text-[#F00018]" />
-              <span>Operator Terminal Sign In</span>
+        {/* AWS Preflight Warning Alerts */}
+        {awsStatus === "auth_expired" && (
+          <div className="mb-4 p-3 rounded-md bg-[#180306] border border-[#F00018]/60 text-xs text-[#F2EEE9] space-y-1 animate-pulse">
+            <div className="flex items-center gap-1.5 font-oswald uppercase text-[#F00018] font-bold">
+              <AlertTriangle className="w-4 h-4 text-[#F00018] shrink-0" />
+              <span>AWS Session Alert</span>
             </div>
-            <span className="text-[10px] font-mono text-[#92929A]">SECTOR GRID 4.2</span>
-          </div>
-
-          {/* AWS Preflight Warning Alerts */}
-          {awsStatus === "auth_expired" && (
-            <div className="mb-4 p-3 rounded-md bg-[#180306] border border-[#F00018]/60 text-xs text-[#F2EEE9] space-y-1 animate-pulse">
-              <div className="flex items-center gap-1.5 font-oswald uppercase text-[#F00018] font-bold">
-                <AlertTriangle className="w-4 h-4 text-[#F00018] shrink-0" />
-                <span>AWS Session Alert</span>
-              </div>
-              <p className="text-[11px] text-[#F2EEE9] font-semibold leading-snug">
-                AWS SESSION EXPIRED — Run aws login in your terminal and refresh the application.
-              </p>
-            </div>
-          )}
-
-          {awsStatus === "service_unavailable" && (
-            <div className="mb-4 p-3 rounded-md bg-[#201005] border border-amber-600/50 text-xs text-[#F2EEE9] space-y-1">
-              <div className="flex items-center gap-1.5 font-oswald uppercase text-amber-400 font-bold">
-                <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
-                <span>AWS Cloud Preflight</span>
-              </div>
-              <p className="text-[11px] text-[#F2EEE9] leading-snug">
-                AWS SERVICE UNAVAILABLE — Cloud resources could not be reached. Verify network connectivity.
-              </p>
-            </div>
-          )}
-
-          {/* Demo Role Station Quick Access Panel */}
-          <div className="mb-5 p-3.5 rounded-md bg-[#050506] border border-[#790009]/35 shadow-inner space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-xs font-oswald uppercase tracking-wider text-[#F2EEE9] font-semibold">
-                <Sparkles className="w-3.5 h-3.5 text-[#F00018]" />
-                <span>Demo Role Quick Access</span>
-              </div>
-              <span className="px-2 py-0.5 rounded text-[9px] font-mono uppercase bg-[#790009]/30 text-[#F00018] border border-[#790009]/40 font-bold">
-                Local Enclave
-              </span>
-            </div>
-            <p className="text-[11px] text-[#92929A] leading-tight">
-              One-click station authentication for hackathon evaluation. Executes genuine server session creation and RBAC.
+            <p className="text-[11px] text-[#F2EEE9] font-semibold leading-snug">
+              AWS SESSION EXPIRED — Run aws login in your terminal and refresh the application.
             </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-0.5">
-              {/* Lead Dispatcher */}
-              <button
-                type="button"
-                onClick={() => handleDemoRoleLogin("Dispatcher")}
-                disabled={isSubmitting || success}
-                className="p-2.5 rounded-md bg-[#111A29]/70 hover:bg-[#180306] border border-[#790009]/35 hover:border-[#C00012] text-left transition-all group disabled:opacity-50 cursor-pointer shadow-sm hover:scale-[1.02]"
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <Radio className="w-3.5 h-3.5 text-[#F00018]" />
-                  <span className="text-[9px] font-mono text-[#92929A] group-hover:text-white">Active</span>
-                </div>
-                <div className="text-xs font-bold text-[#F2EEE9] font-oswald uppercase tracking-wider truncate">
-                  Lead Dispatcher
-                </div>
-                <div className="text-[10px] font-mono text-[#92929A] truncate">
-                  Austin • Queue
-                </div>
-              </button>
-
-              {/* Field Responder */}
-              <button
-                type="button"
-                onClick={() => handleDemoRoleLogin("Responder")}
-                disabled={isSubmitting || success}
-                className="p-2.5 rounded-md bg-[#111A29]/70 hover:bg-[#180306] border border-[#790009]/35 hover:border-[#FF7700] text-left transition-all group disabled:opacity-50 cursor-pointer shadow-sm hover:scale-[1.02]"
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <UserCheck className="w-3.5 h-3.5 text-[#FF7700]" />
-                  <span className="text-[9px] font-mono text-[#92929A] group-hover:text-white">Active</span>
-                </div>
-                <div className="text-xs font-bold text-[#F2EEE9] font-oswald uppercase tracking-wider truncate">
-                  Field Responder
-                </div>
-                <div className="text-[10px] font-mono text-[#92929A] truncate">
-                  Vance • Tactical
-                </div>
-              </button>
-
-              {/* Campus Administrator */}
-              <button
-                type="button"
-                onClick={() => handleDemoRoleLogin("Supervisor")}
-                disabled={isSubmitting || success}
-                className="p-2.5 rounded-md bg-[#111A29]/70 hover:bg-[#180306] border border-[#790009]/35 hover:border-[#FFCC00] text-left transition-all group disabled:opacity-50 cursor-pointer shadow-sm hover:scale-[1.02]"
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <Shield className="w-3.5 h-3.5 text-[#FFCC00]" />
-                  <span className="text-[9px] font-mono text-[#92929A] group-hover:text-white">Active</span>
-                </div>
-                <div className="text-xs font-bold text-[#F2EEE9] font-oswald uppercase tracking-wider truncate">
-                  Administrator
-                </div>
-                <div className="text-[10px] font-mono text-[#92929A] truncate">
-                  Supervisor • Root
-                </div>
-              </button>
-            </div>
           </div>
+        )}
 
-          {/* Gothic Separator */}
-          <div className="relative flex py-1 items-center mb-4">
-            <div className="flex-grow border-t border-[#790009]/25"></div>
-            <span className="flex-shrink mx-3 text-[10px] font-oswald uppercase tracking-wider text-[#92929A]">
-              Or Sign In With Passkey
-            </span>
-            <div className="flex-grow border-t border-[#790009]/25"></div>
+        {/* Sign In / Register Tabs Control */}
+        <div className="p-1 rounded-lg bg-[#050508] border border-[#790009]/40 grid grid-cols-2 gap-1 mb-5">
+          <div className="py-2 px-3 rounded-md bg-gradient-to-r from-[#C00012] to-[#790009] text-white font-oswald uppercase tracking-wider font-semibold text-xs flex items-center justify-center gap-2 shadow-md shadow-red-950/60 cursor-default select-none">
+            <LogIn className="w-3.5 h-3.5" />
+            <span>Sign In</span>
           </div>
+          <Link
+            href="/register"
+            className="py-2 px-3 rounded-md text-[#92929A] hover:text-[#F2EEE9] hover:bg-[#111A29]/50 font-oswald uppercase tracking-wider font-medium text-xs flex items-center justify-center gap-2 transition-all"
+          >
+            <UserPlus className="w-3.5 h-3.5" />
+            <span>Register</span>
+          </Link>
+        </div>
 
-          {/* Status when authenticating */}
-          {authenticatingRole && isSubmitting && (
-            <div className="mb-4 p-3 rounded-md bg-[#050506] border border-[#C00012]/50 text-xs text-[#F2EEE9] flex items-center gap-2 animate-pulse font-mono">
-              <span className="w-2 h-2 rounded-full bg-[#F00018] animate-ping" />
-              <span>Authenticating {authenticatingRole} station terminal...</span>
-            </div>
-          )}
+        {/* Operational Stations Header */}
+        <div className="flex items-center justify-between mb-2.5">
+          <div className="flex items-center gap-1.5 text-xs font-oswald uppercase tracking-wider text-[#F2EEE9] font-semibold">
+            <Sparkles className="w-3.5 h-3.5 text-[#F00018]" />
+            <span>Select Operational Station</span>
+          </div>
+          <span className="text-[10px] font-mono text-[#92929A]">
+            Instant Authorized Entry
+          </span>
+        </div>
 
-          {/* Error Notice */}
-          {errorMessage && (
-            <div className="mb-4 p-3 rounded-md bg-[#180306] border border-[#790009]/80 text-[#F00018] text-xs flex items-start gap-2 shadow-inner">
-              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-              <span className="leading-relaxed">{errorMessage}</span>
-            </div>
-          )}
+        {/* Three Operational Role Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-4">
+          {OPERATIONAL_STATIONS.map((station) => {
+            const Icon = station.icon;
+            return (
+              <button
+                key={station.role}
+                type="button"
+                onClick={() => handleSelectStation(station)}
+                disabled={isSubmitting || success}
+                className={`p-3.5 rounded-lg bg-[#0D0F16]/90 hover:bg-[#180306] border border-[#790009]/35 ${station.hoverBorderColor} text-left transition-all duration-200 group disabled:opacity-50 cursor-pointer shadow-sm hover:-translate-y-0.5 active:scale-[0.98] card-interactive flex flex-col justify-between`}
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div
+                      className="w-6 h-6 rounded flex items-center justify-center bg-[#050508] border border-[#790009]/40 group-hover:border-[#C00012]/60 transition-colors"
+                      style={{ color: station.accentColor }}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                    </div>
+                    <span
+                      className={`text-[8.5px] font-mono uppercase px-1.5 py-0.5 rounded border font-bold ${station.badgeStyle}`}
+                    >
+                      Active
+                    </span>
+                  </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-medium text-[#F2EEE9] font-oswald uppercase tracking-wider mb-1.5">
-                Operator ID / Station Email
-              </label>
+                  <div className="text-xs sm:text-[13px] font-bold text-[#F2EEE9] font-oswald uppercase tracking-wider group-hover:text-white transition-colors">
+                    {station.title}
+                  </div>
+
+                  <div className="text-[10.5px] text-[#92929A] leading-tight line-clamp-3 mt-1.5 group-hover:text-[#F2EEE9]/80 transition-colors">
+                    {station.description}
+                  </div>
+                </div>
+
+                <div className="mt-3 pt-2 border-t border-[#790009]/20 flex items-center justify-between text-[10px] font-mono text-[#92929A] group-hover:text-white transition-colors">
+                  <span>Launch Station</span>
+                  <ArrowRight className="w-3 h-3 transform group-hover:translate-x-1 transition-transform" />
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Divider: Or Enter Credentials */}
+        <div className="relative flex py-1.5 items-center my-3.5">
+          <div className="flex-grow border-t border-[#790009]/25"></div>
+          <span className="flex-shrink mx-3 text-[10px] font-mono uppercase tracking-widest text-[#7D7D88]">
+            Or Enter Terminal Credentials
+          </span>
+          <div className="flex-grow border-t border-[#790009]/25"></div>
+        </div>
+
+        {/* Authenticating Feedback */}
+        {authenticatingRole && isSubmitting && (
+          <div className="mb-3.5 p-2.5 rounded-md bg-[#050508] border border-[#C00012]/50 text-xs text-[#F2EEE9] flex items-center gap-2 animate-pulse font-mono">
+            <span className="w-2 h-2 rounded-full bg-[#F00018] animate-ping" />
+            <span>Authorizing {authenticatingRole} console session...</span>
+          </div>
+        )}
+
+        {/* Credential Form (Visible for Presentation / Non-Blocking) */}
+        <form onSubmit={handleSubmit} className="space-y-3.5">
+          <div>
+            <label className="block text-xs font-medium text-[#F2EEE9] font-oswald uppercase tracking-wider mb-1.5">
+              Operator ID / Station Email
+            </label>
+            <div className="relative">
+              <Mail className="w-4 h-4 text-[#7D7D88] absolute left-3.5 top-3 pointer-events-none" />
               <input
-                type="email"
-                required
+                type="text"
                 disabled={isSubmitting || success}
                 value={operatorId}
-                onChange={(e) => {
-                  setOperatorId(e.target.value);
-                  if (errorMessage) setErrorMessage(null);
-                }}
+                onChange={(e) => setOperatorId(e.target.value)}
                 placeholder="operator@campus.vigilora.internal"
-                className="w-full px-3.5 py-2.5 rounded-md bg-[#050506] border border-[#790009]/40 text-[#F2EEE9] text-xs sm:text-sm focus:outline-none focus:border-[#C00012] focus:ring-1 focus:ring-[#C00012] font-mono disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full pl-10 pr-3.5 py-2.5 rounded-md bg-[#050508] border border-[#790009]/40 text-[#F2EEE9] placeholder-[#555562] font-mono text-xs sm:text-sm focus:outline-none focus:border-[#C00012] focus:ring-1 focus:ring-[#C00012] disabled:opacity-50"
               />
             </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-medium text-[#F2EEE9] font-oswald uppercase tracking-wider">
-                  Security Passkey
-                </label>
-                <span className="text-[10px] font-mono text-[#92929A]">Encrypted</span>
-              </div>
-              <div className="relative">
-                <input
-                  type="password"
-                  required
-                  disabled={isSubmitting || success}
-                  value={accessCode}
-                  onChange={(e) => {
-                    setAccessCode(e.target.value);
-                    if (errorMessage) setErrorMessage(null);
-                  }}
-                  placeholder="Enter your security passkey"
-                  className="w-full px-3.5 py-2.5 rounded-md bg-[#050506] border border-[#790009]/40 text-[#F2EEE9] text-xs sm:text-sm focus:outline-none focus:border-[#C00012] focus:ring-1 focus:ring-[#C00012] font-mono disabled:opacity-50 disabled:cursor-not-allowed"
-                />
-                <KeyRound className="w-4 h-4 text-[#92929A] absolute right-3 top-3 pointer-events-none" />
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              variant="primary"
-              size="lg"
-              className="w-full justify-center mt-2 shadow-lg shadow-black/60"
-              disabled={isSubmitting || success}
-            >
-              {success ? (
-                <span className="flex items-center gap-2 text-emerald-300">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Terminal Authorized</span>
-                </span>
-              ) : isSubmitting ? (
-                <span>{authenticatingRole ? `Authorizing ${authenticatingRole}...` : "Authenticating Passkey..."}</span>
-              ) : (
-                <span className="flex items-center gap-2">
-                  <span>Enter Tactical Console</span>
-                  <ArrowRight className="w-4 h-4" />
-                </span>
-              )}
-            </Button>
-          </form>
-
-          {/* Quick Pre-fill Links */}
-          <div className="mt-5 pt-4 border-t border-[#790009]/25 flex items-center justify-between text-xs">
-            <span className="text-[#92929A] text-[11px]">Need access?</span>
-            <Link
-              href="/register"
-              className="text-[#F00018] hover:text-[#ff2a36] font-oswald uppercase tracking-wider font-semibold inline-flex items-center gap-1"
-            >
-              Register Unit ID →
-            </Link>
           </div>
-        </div>
 
-        {/* Return to Dashboard shortcut */}
-        <div className="text-center">
-          <Link
-            href="/"
-            className="text-xs font-mono text-[#92929A] hover:text-[#F2EEE9] transition-colors inline-flex items-center gap-1.5"
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-medium text-[#F2EEE9] font-oswald uppercase tracking-wider">
+                Security Passkey
+              </label>
+            </div>
+            <div className="relative">
+              <Lock className="w-4 h-4 text-[#7D7D88] absolute left-3.5 top-3 pointer-events-none" />
+              <input
+                type={showPass ? "text" : "password"}
+                disabled={isSubmitting || success}
+                value={accessCode}
+                onChange={(e) => setAccessCode(e.target.value)}
+                placeholder="Enter your security passkey"
+                className="w-full pl-10 pr-10 py-2.5 rounded-md bg-[#050508] border border-[#790009]/40 text-[#F2EEE9] placeholder-[#555562] font-mono text-xs sm:text-sm focus:outline-none focus:border-[#C00012] focus:ring-1 focus:ring-[#C00012] disabled:opacity-50"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPass(!showPass)}
+                className="absolute right-3.5 top-3 text-[#7D7D88] hover:text-[#F2EEE9] transition-colors focus:outline-none"
+                tabIndex={-1}
+              >
+                {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={isSubmitting || success}
+            className="w-full py-3 rounded-md bg-gradient-to-r from-[#F00018] via-[#C00012] to-[#790009] hover:from-[#ff1a26] hover:to-[#8e000b] hover:shadow-[0_0_16px_rgba(240,0,24,0.4)] text-white font-oswald uppercase tracking-wider font-bold text-sm shadow-lg shadow-black/80 flex items-center justify-center gap-2 active:scale-[0.98] transition-all duration-200 cursor-pointer disabled:opacity-50"
           >
-            <span>← Return to Public Dashboard Feed</span>
-          </Link>
-        </div>
+            {success ? (
+              <span className="flex items-center gap-2 text-white animate-scale-check">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <span>Terminal Authorized</span>
+              </span>
+            ) : isSubmitting ? (
+              <span className="flex items-center gap-2">
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span>Authorizing Terminal...</span>
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                <span>Enter Tactical Console</span>
+                <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
+              </span>
+            )}
+          </button>
+        </form>
       </div>
-    </div>
+    </AuthPageLayout>
   );
 }

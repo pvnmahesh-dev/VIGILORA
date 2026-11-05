@@ -9,7 +9,7 @@ import React, {
   useMemo,
 } from "react";
 
-export type OperatorRole = "Supervisor" | "Dispatcher" | "Responder" | "Reporter";
+export type OperatorRole = "Supervisor" | "Dispatcher" | "Responder";
 
 export interface AuthUser {
   email: string;
@@ -29,7 +29,7 @@ export interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<LoginResult>;
-  demoLogin: (role: "Dispatcher" | "Responder" | "Supervisor") => Promise<LoginResult>;
+  demoLogin: (role: OperatorRole) => Promise<LoginResult>;
   logout: () => Promise<void>;
   refreshSession: () => Promise<void>;
 }
@@ -121,9 +121,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
-  // Authenticate as a pre-configured demo station via POST /api/auth/demo-login
+  // Authenticate as a pre-configured station via POST /api/auth/demo-login
   const demoLogin = useCallback(
-    async (role: "Dispatcher" | "Responder" | "Supervisor"): Promise<LoginResult> => {
+    async (role: OperatorRole): Promise<LoginResult> => {
       try {
         const response = await fetch("/api/auth/demo-login", {
           method: "POST",

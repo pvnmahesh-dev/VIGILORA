@@ -569,9 +569,9 @@ export default function LiveIncidentsPage() {
                         <button
                           key={st}
                           onClick={() => handleUpdateStatus(st)}
-                          className={`px-3 py-1.5 rounded-md text-xs font-semibold tracking-wider transition-all ${
+                          className={`px-3 py-1.5 rounded-md text-xs font-semibold tracking-wider transition-all duration-200 active:scale-[0.98] ${
                             isCurrent
-                              ? "bg-[#790009]/35 text-[#F00018] border border-[#C00012]/60 ring-1 ring-[#C00012]/40 font-bold shadow-md"
+                              ? "bg-[#790009]/35 text-[#F00018] border border-[#C00012]/60 ring-1 ring-[#C00012]/40 font-bold shadow-md shadow-black/40"
                               : "bg-[#050506] text-[#92929A] border border-[#790009]/30 hover:border-[#C00012]/50 hover:text-white"
                           }`}
                         >
@@ -627,7 +627,7 @@ export default function LiveIncidentsPage() {
                           key={team.id}
                           type="button"
                           onClick={() => handleAssignTeam(team.id)}
-                          className={`p-3 rounded-md border text-left text-xs transition-all flex items-center justify-between ${
+                          className={`p-3 rounded-md border text-left text-xs transition-all duration-200 active:scale-[0.98] flex items-center justify-between cursor-pointer ${
                             isAssignedToThis
                               ? "bg-[#041a0d]/60 border-emerald-500/50 text-[#00CC66] ring-1 ring-emerald-500/40"
                               : "bg-[#050506] border-[#790009]/30 text-[#92929A] hover:border-[#C00012]/50 hover:text-[#F2EEE9]"

@@ -463,15 +463,15 @@ export function TacticalMap({
               PinIcon = ShieldAlert;
               wave = (
                 <>
-                  <span className="absolute -inset-3.5 rounded-full bg-[#C00012]/35 animate-ping opacity-75 pointer-events-none" />
-                  <span className="absolute -inset-1.5 rounded-full bg-[#C00012]/25 animate-pulse pointer-events-none" />
+                  <span className="absolute -inset-3 rounded-full border border-[#C00012]/60 bg-[#C00012]/20 animate-radar-ring pointer-events-none" />
+                  <span className="absolute -inset-1 rounded-full bg-[#C00012]/25 animate-critical-pulse pointer-events-none" />
                 </>
               );
             } else if (isHigh) {
               pinBg = "bg-[#FF7700] border-black text-white shadow-[0_0_12px_rgba(255,119,0,0.7)]";
               PinIcon = AlertTriangle;
               wave = (
-                <span className="absolute -inset-2.5 rounded-full bg-[#FF7700]/35 animate-pulse pointer-events-none" />
+                <span className="absolute -inset-1.5 rounded-full bg-[#FF7700]/25 animate-active-pulse pointer-events-none" />
               );
             } else if (isMedium) {
               pinBg = "bg-[#FFCC00] border-black text-black shadow-[0_0_10px_rgba(255,204,0,0.6)]";

@@ -14,7 +14,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const isAuthPage = pathname === "/login" || pathname === "/register";
+  const isAuthPage =
+    pathname === "/login" ||
+    pathname === "/register" ||
+    pathname?.startsWith("/login") ||
+    pathname?.startsWith("/register");
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated && !isAuthPage) {

@@ -1,26 +1,21 @@
 /**
- * VIGILORA Local Hackathon Demo Roles Provisioning Script
+ * VIGILORA Hackathon Demo Roles Provisioning Script
  *
- * Provisions three genuine operator accounts for hackathon judging:
+ * Provisions genuine operator accounts for hackathon judging directly in DynamoDB:
  * 1. Lead Dispatcher (role: Dispatcher)
  * 2. Field Responder (role: Responder)
- * 3. Campus Administrator (role: Supervisor)
  *
  * Security:
- * - Credentials are saved strictly to a local, git-ignored file (.demo-credentials.json)
- * - Never committed to source control
- * - Conditional writes prevent duplicate accounts or resetting existing users
- * - Zero hardcoding in client application code
+ * - Credentials are encrypted via scrypt and stored directly in DynamoDB
+ * - Zero plaintext passwords written to disk or environment variables
+ * - Idempotent conditional writes prevent overwriting existing credentials
+ * - Zero hardcoding in frontend bundles
  */
 
-import fs from "node:fs";
-import path from "node:path";
 import crypto from "node:crypto";
 import { provisionUser, UserRole } from "../src/lib/auth";
 import { docClient, DYNAMODB_TABLE, getCampusPartitionKey } from "../src/lib/aws";
 import { UpdateCommand } from "@aws-sdk/lib-dynamodb";
-
-const CREDENTIALS_FILE = path.join(process.cwd(), ".demo-credentials.json");
 
 interface DemoAccountConfig {
   role: UserRole;
@@ -28,7 +23,6 @@ interface DemoAccountConfig {
   name: string;
   callsign: string;
   teamId?: string;
-  password?: string;
 }
 
 const DEMO_ACCOUNTS: DemoAccountConfig[] = [
@@ -54,29 +48,20 @@ const DEMO_ACCOUNTS: DemoAccountConfig[] = [
 ];
 
 function generateSecurePassword(): string {
-  return `${crypto.randomBytes(12).toString("base64url")}!Vig2026`;
+  return `${crypto.randomBytes(16).toString("base64url")}!Vig2026`;
 }
 
 async function main() {
+  const campusPk = getCampusPartitionKey();
+
   console.log("================================================================================");
   console.log("       VIGILORA HACKATHON: DEMO ROLE USER PROVISIONING TOOL");
   console.log("================================================================================\n");
-
-  let existingSaved: Record<string, DemoAccountConfig> = {};
-  if (fs.existsSync(CREDENTIALS_FILE)) {
-    try {
-      existingSaved = JSON.parse(fs.readFileSync(CREDENTIALS_FILE, "utf-8"));
-      console.log(`[INFO] Found existing local credentials at ${CREDENTIALS_FILE}`);
-    } catch {
-      existingSaved = {};
-    }
-  }
-
-  const results: Record<string, DemoAccountConfig & { status: string }> = {};
+  console.log(`Target Partition: ${campusPk}`);
+  console.log(`Target Table:     ${DYNAMODB_TABLE}\n`);
 
   for (const account of DEMO_ACCOUNTS) {
-    const existingEntry = existingSaved[account.role];
-    const password = existingEntry?.password || generateSecurePassword();
+    const password = generateSecurePassword();
 
     try {
       console.log(`Provisioning [${account.role}] account (${account.email})...`);
@@ -87,15 +72,16 @@ async function main() {
         role: account.role,
         callsign: account.callsign,
         teamId: account.teamId,
+        campusId: campusPk,
       });
 
-      // If account already exists and has a specified team association, synchronize teamId in DynamoDB
-      if (!res.created && account.teamId) {
+      // Synchronize team association in DynamoDB if needed
+      if (account.teamId) {
         await docClient.send(
           new UpdateCommand({
             TableName: DYNAMODB_TABLE,
             Key: {
-              pk: getCampusPartitionKey(),
+              pk: campusPk,
               sk: `USER#${account.email.toLowerCase()}`,
             },
             UpdateExpression: "SET teamId = :tid, updatedAt = :now",
@@ -108,16 +94,6 @@ async function main() {
         console.log(`  -> Associated with tactical unit [${account.teamId}] in DynamoDB`);
       }
 
-      results[account.role] = {
-        role: account.role,
-        email: account.email,
-        name: account.name,
-        callsign: account.callsign,
-        teamId: account.teamId,
-        password,
-        status: res.created ? "CREATED" : "ALREADY_EXISTS (PRESERVED)",
-      };
-
       console.log(`  -> Status: ${res.created ? "NEW ACCOUNT CREATED" : "ALREADY EXISTS (PRESERVED)"}`);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -126,22 +102,17 @@ async function main() {
     }
   }
 
-  // Write securely to local .demo-credentials.json (ignored by git)
-  fs.writeFileSync(CREDENTIALS_FILE, JSON.stringify(results, null, 2), {
-    mode: 0o600,
-  });
-
   console.log("\n================================================================================");
   console.log("  DEMO ROLE ACCOUNTS READY FOR HACKATHON EVALUATION");
   console.log("================================================================================");
-  for (const [role, acc] of Object.entries(results)) {
-    console.log(`\n• ROLE: ${role.toUpperCase()}`);
+  for (const acc of DEMO_ACCOUNTS) {
+    console.log(`\n• ROLE: ${acc.role.toUpperCase()}`);
     console.log(`  Email:    ${acc.email}`);
     console.log(`  Name:     ${acc.name}`);
     console.log(`  Callsign: ${acc.callsign}`);
-    console.log(`  Status:   ${acc.status}`);
+    if (acc.teamId) console.log(`  Team:     ${acc.teamId}`);
   }
-  console.log("\nLocal credentials persisted to: .demo-credentials.json (Strictly excluded from git)");
+  console.log("\nZero credentials written to disk. Direct role selection enabled via /api/auth/demo-login.");
   console.log("================================================================================\n");
 }
 
@@ -149,4 +120,3 @@ main().catch((err) => {
   console.error("Provisioning failed:", err);
   process.exit(1);
 });
-

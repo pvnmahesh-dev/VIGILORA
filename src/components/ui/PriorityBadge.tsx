@@ -23,8 +23,8 @@ export function PriorityBadge({
 
   const config = {
     Critical: {
-      bg: "bg-[#790009]/35 text-[#F00018] border-[#C00012]/60 shadow-[0_0_12px_rgba(240,0,24,0.35)]",
-      dot: "bg-[#F00018] animate-pulse",
+      bg: "bg-[#790009]/35 text-[#F00018] border-[#C00012]/60 shadow-[0_0_12px_rgba(240,0,24,0.35)] animate-critical-pulse",
+      dot: "bg-[#F00018] animate-critical-pulse",
       icon: ShieldAlert,
       label: "Critical",
     },

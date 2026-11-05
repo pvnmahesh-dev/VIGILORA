@@ -31,10 +31,10 @@ export function IncidentCard({
   return (
     <div
       onClick={() => onSelect?.(incident)}
-      className={`group relative rounded-md bg-[#0A0B10] border p-4 transition-all duration-200 cursor-pointer shadow-lg ${
+      className={`group relative rounded-md bg-[#0A0B10] border p-4 transition-all duration-200 cursor-pointer shadow-lg card-interactive hover:-translate-y-0.5 active:scale-[0.99] ${
         isCritical
-          ? "border-[#C00012]/60 hover:border-[#F00018] shadow-[0_0_18px_rgba(192,0,18,0.25)]"
-          : "border-[#790009]/30 hover:border-[#C00012]/60 hover:shadow-black/60"
+          ? "border-[#C00012]/60 hover:border-[#F00018] hover:shadow-[0_0_24px_rgba(192,0,18,0.35)] shadow-[0_0_18px_rgba(192,0,18,0.25)]"
+          : "border-[#790009]/30 hover:border-[#C00012]/60 hover:shadow-black/80"
       }`}
     >
       {/* Top Bar: Badges & ID */}

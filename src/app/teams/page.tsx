@@ -147,9 +147,9 @@ export default function ResponseTeamsPage() {
             <button
               key={st}
               onClick={() => setStatusFilter(st)}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap transition-colors ${
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap transition-all duration-200 active:scale-[0.98] ${
                 statusFilter === st
-                  ? "bg-[#790009]/35 text-[#F00018] border border-[#C00012]/50"
+                  ? "bg-[#790009]/35 text-[#F00018] border border-[#C00012]/50 font-bold"
                   : "text-[#92929A] hover:text-[#F2EEE9] hover:bg-[#790009]/15 border border-transparent"
               }`}
             >
@@ -164,7 +164,7 @@ export default function ResponseTeamsPage() {
         {filteredTeams.map((team) => (
           <div
             key={team.id}
-            className="rounded-md bg-[#0A0B10] border border-[#790009]/30 p-5 space-y-4 hover:border-[#C00012]/50 transition-all shadow-xl flex flex-col justify-between"
+            className="rounded-md bg-[#0A0B10] border border-[#790009]/30 p-5 space-y-4 hover:border-[#C00012]/50 hover:-translate-y-0.5 transition-all duration-200 shadow-xl flex flex-col justify-between card-interactive"
           >
             <div>
               {/* Unit Header */}
@@ -252,7 +252,7 @@ export default function ResponseTeamsPage() {
                         setTimeout(() => setStatusNotice(null), 6000);
                       }
                     }}
-                    className={`flex-1 py-1 rounded text-[10px] font-semibold tracking-wider transition-colors border ${
+                    className={`flex-1 py-1 rounded text-[10px] font-semibold tracking-wider transition-all duration-200 active:scale-[0.98] border cursor-pointer ${
                       team.status === st
                         ? "bg-[#790009]/40 text-[#F00018] border-[#C00012]/50 font-bold"
                         : "bg-[#050506] text-[#92929A] border-[#790009]/30 hover:bg-[#790009]/15 hover:text-white"

@@ -336,6 +336,20 @@ body {
   transform: translateY(-1px);
 }
 
+.btn-gothic-crimson:active {
+  transform: scale(0.98);
+  filter: brightness(0.96);
+  transition-duration: 80ms;
+}
+
+.btn-gothic-crimson:disabled {
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
 .btn-gothic-crimson:focus-visible {
   outline: 2px solid #FFFFFF;
   outline-offset: 2px;
@@ -360,7 +374,227 @@ body {
   box-shadow: 0 0 14px rgba(192, 0, 18, 0.3);
 }
 
+.btn-gothic-charcoal:active {
+  transform: scale(0.98);
+  filter: brightness(0.96);
+  transition-duration: 80ms;
+}
+
+.btn-gothic-charcoal:disabled {
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
 .btn-gothic-charcoal:focus-visible {
   outline: 2px solid #C00012;
   outline-offset: 2px;
+}
+
+/* =========================================================================
+   VIGILORA Professional Operational Motion System
+   ========================================================================= */
+
+/* 1. Realistic Operational Button Interactions */
+.btn-interactive {
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, box-shadow;
+}
+
+.btn-interactive:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.7), 0 0 12px rgba(192, 0, 18, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-interactive:active {
+  transform: scale(0.98) translateY(0);
+  filter: brightness(0.96);
+  transition-duration: 80ms;
+}
+
+.btn-interactive:disabled {
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* 2. Controlled Operational Status Pulse Animations */
+@keyframes operational-pulse-green {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45);
+  }
+  50% {
+    opacity: 0.75;
+    transform: scale(0.96);
+    box-shadow: 0 0 8px 1px rgba(16, 185, 129, 0.2);
+  }
+}
+
+.animate-operational-pulse {
+  animation: operational-pulse-green 3s ease-in-out infinite;
+}
+
+@keyframes critical-warning-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 12px 2px rgba(240, 0, 24, 0.55);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(0.95);
+    box-shadow: 0 0 4px 0px rgba(240, 0, 24, 0.2);
+  }
+}
+
+.animate-critical-pulse {
+  animation: critical-warning-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes active-amber-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 8px 1px rgba(245, 158, 11, 0.4);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(0.96);
+    box-shadow: 0 0 3px 0px rgba(245, 158, 11, 0.15);
+  }
+}
+
+.animate-active-pulse {
+  animation: active-amber-pulse 2.4s ease-in-out infinite;
+}
+
+/* Radar pulse ring for tactical map markers */
+@keyframes radar-ring-expand {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.75;
+  }
+  100% {
+    transform: scale(1.65);
+    opacity: 0;
+  }
+}
+
+.animate-radar-ring {
+  animation: radar-ring-expand 2s cubic-bezier(0.2, 0.6, 0.4, 1) infinite;
+}
+
+/* 3. Cards & Panels Hover Interactions */
+.card-interactive {
+  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, border-color, box-shadow;
+}
+
+.card-interactive:hover {
+  transform: translateY(-2px);
+  border-color: rgba(192, 0, 18, 0.55);
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.85), 0 0 16px -2px rgba(192, 0, 18, 0.22);
+}
+
+/* 4. Page Entrance & Metric Stagger Animations */
+@keyframes card-entrance-fade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-card-entrance {
+  animation: card-entrance-fade 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes page-enter-fade {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-page-enter {
+  animation: page-enter-fade 250ms ease-out both;
+}
+
+/* 5. Success Scale-Check Animation */
+@keyframes scale-check-in {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-scale-check {
+  animation: scale-check-in 300ms cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+/* 6. Gothic Shimmer Skeleton Loader */
+@keyframes gothic-shimmer-sweep {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-gothic {
+  background: linear-gradient(90deg, #0A0B10 25%, #182333 50%, #0A0B10 75%);
+  background-size: 200% 100%;
+  animation: gothic-shimmer-sweep 2.2s infinite ease-in-out;
+  border-radius: 6px;
+}
+
+/* 7. Subtle Atmospheric Background Breathing for Auth Pages */
+@keyframes auth-bg-breathe {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.018);
+  }
+}
+
+.animate-auth-breathe {
+  animation: auth-bg-breathe 24s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* 8. Accessibility: Respect User Reduced Motion Preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

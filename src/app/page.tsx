@@ -355,7 +355,7 @@ export default function DashboardPage() {
 
         {/* KPI Strip matching master visual reference */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
-          <div className="p-3 sm:p-3.5 rounded-md bg-[#0A0B10] border border-[#790009]/35 flex flex-col justify-between shadow-xl hover:border-[#C00012]/40 transition-colors">
+          <div className="p-3 sm:p-3.5 rounded-md bg-[#0A0B10] border border-[#790009]/35 flex flex-col justify-between shadow-xl hover:border-[#C00012]/50 hover:-translate-y-0.5 transition-all duration-200 card-interactive animate-card-entrance cursor-default">
             <div className="text-xl sm:text-3xl font-extrabold font-mono text-[#F2EEE9] tracking-tight">
               {metrics.totalIncidents}
             </div>
@@ -364,7 +364,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="p-3 sm:p-3.5 rounded-md bg-[#0A0B10] border border-[#790009]/35 flex flex-col justify-between shadow-xl hover:border-[#C00012]/40 transition-colors">
+          <div className="p-3 sm:p-3.5 rounded-md bg-[#0A0B10] border border-[#790009]/35 flex flex-col justify-between shadow-xl hover:border-[#C00012]/50 hover:-translate-y-0.5 transition-all duration-200 card-interactive animate-card-entrance cursor-default">
             <div className="text-xl sm:text-3xl font-extrabold font-mono text-[#F2EEE9] tracking-tight">
               {metrics.activeIncidents}
             </div>
@@ -373,8 +373,8 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="p-3 sm:p-3.5 rounded-md bg-[#180306] border border-[#F00018]/60 shadow-[0_0_18px_rgba(240,0,24,0.3)] flex flex-col justify-between relative overflow-hidden">
-            <div className="absolute top-1 right-2 w-1.5 h-1.5 rounded-full bg-[#F00018] animate-pulse" />
+          <div className="p-3 sm:p-3.5 rounded-md bg-[#180306] border border-[#F00018]/60 shadow-[0_0_18px_rgba(240,0,24,0.3)] hover:shadow-[0_0_24px_rgba(240,0,24,0.45)] hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between relative overflow-hidden card-interactive animate-card-entrance cursor-default">
+            <div className="absolute top-1.5 right-2 w-1.5 h-1.5 rounded-full bg-[#F00018] animate-critical-pulse" />
             <div className="text-xl sm:text-3xl font-extrabold font-mono text-[#F00018] tracking-tight">
               {metrics.criticalIncidents}
             </div>
@@ -383,7 +383,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="p-3 sm:p-3.5 rounded-md bg-[#0A0B10] border border-[#790009]/35 flex flex-col justify-between shadow-xl hover:border-[#C00012]/40 transition-colors">
+          <div className="p-3 sm:p-3.5 rounded-md bg-[#0A0B10] border border-[#790009]/35 flex flex-col justify-between shadow-xl hover:border-[#C00012]/50 hover:-translate-y-0.5 transition-all duration-200 card-interactive animate-card-entrance cursor-default">
             <div className="text-xl sm:text-3xl font-extrabold font-mono text-[#F2EEE9] tracking-tight">
               {metrics.resolvedIncidents}
             </div>
@@ -393,7 +393,7 @@ export default function DashboardPage() {
           </div>
 
           <div
-            className="col-span-2 sm:col-span-1 p-3 sm:p-3.5 rounded-md bg-[#0A0B10] border border-[#790009]/35 flex flex-col justify-between shadow-xl hover:border-[#C00012]/40 transition-colors"
+            className="col-span-2 sm:col-span-1 p-3 sm:p-3.5 rounded-md bg-[#0A0B10] border border-[#790009]/35 flex flex-col justify-between shadow-xl hover:border-[#C00012]/50 hover:-translate-y-0.5 transition-all duration-200 card-interactive animate-card-entrance cursor-default"
             title={metrics.responseTelemetryExplanation || "Average time from incident reporting to the first verified dispatch, calculated from genuine persisted incident records only."}
           >
             <div>
